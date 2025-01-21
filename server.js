@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
         cb(null, file.originalname);
     }
 })
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage, limits: {fileSize: 107374182400} });
 app.use(express.static("public/"));
 
 const keyCheck = (req, res, next) => {
@@ -34,6 +34,11 @@ const keyCheck = (req, res, next) => {
         return res.status(403).send({error: "Invalid key"});
     } else {
         req.authKey = key;
+        
+        const maxSize = getKeyData(key).maxSize;
+        if(req.headers["content-length"] > maxSize) {
+            return res.status(413).send({error: "File too large"});
+        }
         next();
     }
 };
@@ -73,7 +78,11 @@ app.get("/download/:id", (req, res) => {
 
     const fileInfo = JSON.parse(fs.readFileSync(path.join(fileDirectory, "info.json")));
     fileInfo.downloads++;
-    fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
+    if(fileInfo.downloads < getKeyData(fileInfo.key).maxDownloads) {
+        fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
+    } else {
+
+    }
 
     res.download(path.join(fileDirectory, fileInfo.name), fileInfo.name);
 });

@@ -1,9 +1,10 @@
 const fs = require('fs');
+const uuid = require('uuid');
 
 function generateFileId() {
-    let id = Math.floor(Math.random() * 1000000).toString();
+    let id = uuid.v4();
     while(fs.existsSync(`./uploads/${id}`)) {
-        id = Math.floor(Math.random() * 1000000).toString();
+        id = uuid.v4();
     }
     return id;
 }
