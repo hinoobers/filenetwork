@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const uuid = require('uuid');
 
 function generateFileId() {
@@ -20,5 +21,19 @@ function getKeyData(key) {
     return null;
 }
 
+function deleteDirectory(directory) {
+    if(fs.existsSync(directory)) { 
+        fs.readdirSync(directory).forEach((file) => {
+            const filePath = path.join(directory, file);
+            if(fs.lstatSync(filePath).isDirectory()) {
+                deleteDirectory(filePath);
+            } else {
+                fs.unlinkSync(filePath);
+            }
+        });
+        fs.rmdirSync(directory);
+    }
+}
 
-module.exports = { generateFileId, getKeyData };
+
+module.exports = { generateFileId, getKeyData, deleteDirectory };
