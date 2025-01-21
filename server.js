@@ -57,7 +57,7 @@ app.post("/upload", keyCheck, upload.single("file"), (req, res) => {
     };
     fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
     
-    res.send({id: fileId, downloadURL: `${BASE_URL}/download/${fileId}`});
+    res.send({id: fileId, downloadURL: `${BASE_URL}/download/${fileId}`, viewURL: `${BASE_URL}/view/${fileId}`});
 });
 
 app.get("/download/:id", (req, res) => {
@@ -76,6 +76,28 @@ app.get("/download/:id", (req, res) => {
     fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
 
     res.download(path.join(fileDirectory, fileInfo.name), fileInfo.name);
+});
+
+app.get("/view/:id", (req, res) => {
+    const fileId = req.params.id;
+    if(!fileId) {
+        return res.status(400).send({error: "No file ID provided"});
+    }
+
+    const fileDirectory = path.join(UPLOAD_DIR, fileId);
+    if(!fs.existsSync(fileDirectory)) {
+        return res.status(404).send({error: "File not found"});
+    }
+
+    const fileInfo = JSON.parse(fs.readFileSync(path.join(fileDirectory, "info.json")));
+    const mime = fileInfo.mime;
+
+    if(["image/jpeg", "image/png", "image/gif"].includes(mime)) {
+        res.setHeader('Content-Type', mime);
+        res.sendFile(path.join(fileDirectory, fileInfo.name), {root: __dirname});
+    } else {
+        res.status(400).send({error: "File is not viewable"});
+    }
 });
 
 
