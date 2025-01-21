@@ -62,6 +62,9 @@ app.post("/upload", keyCheck, upload.single("file"), (req, res) => {
     };
     fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
     
+    if(req.query.viewOnly) {
+        return res.send(`${BASE_URL}/view/${fileId}`);
+    }
     res.send({id: fileId, downloadURL: `${BASE_URL}/download/${fileId}`, viewURL: `${BASE_URL}/view/${fileId}`});
 });
 
