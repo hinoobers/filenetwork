@@ -82,7 +82,10 @@ app.get("/download/:id", (req, res) => {
     const fileInfo = JSON.parse(fs.readFileSync(path.join(fileDirectory, "info.json")));
     fileInfo.downloads++;
     let del = Date.now() > fileInfo.uploaded + (getKeyData(fileInfo.key).expires * 3.6e+6);
-
+    if(getKeyData(fileInfo.key).expires < 0) {
+        del = false;
+    }
+    
     if(fileInfo.downloads < getKeyData(fileInfo.key).maxDownloads) {
         fs.writeFileSync(path.join(fileDirectory, "info.json"), JSON.stringify(fileInfo));
     } else {
