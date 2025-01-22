@@ -21,6 +21,22 @@ function getKeyData(key) {
     return null;
 }
 
+function getFolderSize(path) {
+    let size = 0;
+
+    const files = fs.readdirSync(path);
+    for(const file of files) {
+        const stats = fs.statSync(`${path}/${file}`);
+        if(stats.isDirectory()) {
+            size += getFolderSize(`${path}/${file}`);
+        } else {
+            size += stats.size;
+        }
+    }
+
+    return size;
+}
+
 function deleteDirectory(directory) {
     if(fs.existsSync(directory)) { 
         fs.readdirSync(directory).forEach((file) => {
@@ -36,4 +52,4 @@ function deleteDirectory(directory) {
 }
 
 
-module.exports = { generateFileId, getKeyData, deleteDirectory };
+module.exports = { generateFileId, getKeyData, deleteDirectory, getFolderSize };
